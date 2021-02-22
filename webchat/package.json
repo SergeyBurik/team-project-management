@@ -1,0 +1,22 @@
+{
+  "name": "webchat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [
+    "node.js"
+  ],
+  "author": "Serge Burik <sergioburik@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "mongodb": "^3.5.9",
+    "node-static": "^0.7.11",
+    "websocket": "^1.0.31",
+    "ws": "^7.3.0"
+  }
+}

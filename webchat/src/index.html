@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="messages">
+    <!--    messages will be there-->
+</div>
+<div class="send-message-form">
+    <form action="#" id="publish">
+        <input type="text" name="message">
+        <input type="submit">
+    </form>
+</div>
+
+<script>
+    // creating connection
+    var socket = new WebSocket("ws://localhost:8008/");
+
+    // asking for user name
+    // let username = prompt("Enter your username");
+    // let name = prompt("Enter your name");
+    // let surname = prompt("Enter your surname");
+    //
+    // let group_id = prompt("Group id: ");
+
+    function findGetParameter(parameterName) {
+        var result = null,
+            tmp = [];
+        location.search
+            .substr(1)
+            .split("&")
+            .forEach(function (item) {
+                tmp = item.split("=");
+                if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+            });
+        return result;
+    }
+
+    let username = findGetParameter("username");
+    let name = findGetParameter("name");
+    let surname = findGetParameter("surname");
+    let group_id = findGetParameter("group_id");
+
+    let wsSend = function (data) {
+        let sent = false;
+        while (!sent) {
+            try {
+                if (!socket.readyState) {
+                    setTimeout(function () {
+                        socket.send(data);
+                    }, 100);
+                } else {
+                    socket.send(data);
+                }
+                sent = true;
+            } catch (e) {
+                sent = false;
+            }
+        }
+    };
+
+    // login in chat system
+    wsSend(JSON.stringify({
+        'action': 'presence',
+        'username': username,
+        'name': name,
+        'surname': surname,
+        "password": "123"
+    }));
+
+
+    // create group
+    // wsSend(JSON.stringify({"action": "create_group", "id": group_id, "users": [username]}));
+
+
+    // sending user's message
+    document.forms.publish.onsubmit = function () {
+        let outgoingMessage = this.message.value;
+
+        wsSend(JSON.stringify({
+            'action': 'group_message',
+            'group_id': parseInt(group_id),
+            'username': username,
+            'message_text': outgoingMessage
+        }));
+        document.getElementsByClassName('messages')[0].innerHTML += `<p>You: ${incomingMessage.message_text}</p>`
+
+        return false;
+    };
+
+    // on server's response handler
+    socket.onmessage = function (event) {
+        let incomingMessage = event.data;
+        try {
+            incomingMessage = JSON.parse(incomingMessage);
+        } catch (e) {
+            console.log(e);
+        }
+
+        console.log(incomingMessage);
+
+        if (incomingMessage.code === 200) {
+            console.log("Response from server");
+        } else if (incomingMessage.code === 500) {
+            alert(incomingMessage.message);
+        } else if (incomingMessage.action != null && incomingMessage.action === "group_message") {
+            document.getElementsByClassName('messages')[0].innerHTML += `<p>${incomingMessage.from_user} ${incomingMessage.message_text}</p>`
+        }
+
+    };
+
+
+</script>
+</body>
+</html>

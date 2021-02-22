@@ -1,0 +1,8 @@
+Pillow
+django
+websocket-client==0.53.0
+simple-websocket-server==0.4.0
+mixer
+djangorestframework
+markdown
+django-filter

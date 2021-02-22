@@ -1,0 +1,321 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lamp - {{ board.name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+            integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+            crossorigin="anonymous"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+          integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+
+    <style>
+        #chat div {
+            padding-right: 0;
+            min-height: calc(100vh - 57px)
+        }
+    </style>
+</head>
+<body style="width: 100%; min-height: 100%; background-size: cover; background-image: url('https://trello-backgrounds.s3.amazonaws.com/SharedBackground/1537x1920/117d138c6be2845aadfd039c1b319cf7/photo-1580745389677-2b603a39011d.jpg')">
+{% include 'mainapp/includes/navbar.html' %}
+
+<div style="display: flex">
+    <div id="board" class="split" style="width: calc(75% - 5px);">
+        <div class="container-fluid mt-5">
+            <h3>{{ board.name }} ({{ board.author.username }})</h3>
+            <div class="boardTeammates">
+                <div class="boardTeammate">
+                    {{ board.author.first_name }} {{ board.author.last_name }}
+                </div>
+                {% for user in users %}
+                    <div class="boardTeammate">
+                        {{ user.user.first_name }} {{ user.user.last_name }}
+                    </div>
+                {% endfor %}
+                <button class="btn btn-transparent ml-2 btnInvite">Invite</button>
+                <div class="ml-2 mt-2 block-white inviteLink" style="display: none">
+                    <p style="margin-bottom: 0">Invite link</p>
+                    <h6>http://{{ request.get_host }}{% url "main:invite" board.token %}</h6>
+                </div>
+            </div>
+
+            <div class="boardContent mt-3">
+                {% for col in data %}
+                    <div class="columnWrapper">
+                        <div class="column">
+                            <h4 class="columnHeader">{{ col.name }}</h4>
+                            <div class="task board-list" id="col-{{ col.id }}" ondrop="dropIt(event)"
+                                 ondragover="allowDrop(event)">
+                                {% for task in col.tasks %}
+                                    <div id="card-{{ task.id }}" class="columnTask card" draggable="true"
+                                         ondragstart="dragStart(event)">
+                                        <p>{{ task.name }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="addTaskContainer">
+                                <span class="addTask" data-id="{{ col.id }}">
+                                    + Add one more task
+                                </span>
+                                <form action="{% url 'main:create_task' col.id %}" method="post" id="form-{{ col.id }}"
+                                      style="display: none">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <input type="text" name="name" placeholder="Task's name" class="form-control">
+                                    </div>
+                                    <button class="btn" style="color: white" type="submit">Create</button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+                <div class="columnWrapper">
+                    <div class="column">
+                        <h4 class="columnHeader">New column</h4>
+                        <form action="{% url 'main:create_column' request.user.username board.id %}" method="post">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <input type="text" name="name" placeholder="Column's name" class="form-control">
+                            </div>
+                            <button class="btn" style="color: white" type="submit">New column</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div id="chat" class="split" style="width: calc(25% - 5px);display: flex">
+        <div id="chat-room" style="border-top-left-radius: 0;
+                                   border-bottom-left-radius: 0; width: 100%" class="cont-white">
+            <h5>Team chat</h5>
+            <ol class="messages">
+            </ol>
+
+            <form action="#" id="sendMessage" class="messageForm">
+                <input type="text" name="message" class="messageInput" placeholder="Enter message">
+                <button type="submit" class="btn" style="color: white">Send</button>
+            </form>
+        </div>
+        <div id="chat-tools"
+             style="border-right: #ebebeb solid 1px; float:right; width: 30px; border-top-right-radius: 0; border-bottom-right-radius: 0"
+             class="cont-white">
+            <i class="fas fa-angle-left" id="chat-toggle" style="cursor: pointer"></i>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    $(".btnInvite").click(function () {
+        $(".inviteLink").toggle();
+    });
+
+    let tm = document.getElementsByClassName("boardTeammate");
+    for (let user of tm) {
+        let name = user.innerText.split(' ');
+        console.log(name);
+        let res = "";
+        for (let n of name) {
+            res += n[0]
+        }
+        console.log(res);
+
+        user.innerText = res;
+    }
+</script>
+<script>
+    function allowDrop(ev) {
+        ev.preventDefault();  // default is not to allow drop
+    }
+
+    function dragStart(ev) {
+        // The 'text/plain' is referring the Data Type (DOMString)
+        // of the Object being dragged.
+        // ev.target.id is the id of the Object being dragged
+        ev.dataTransfer.setData("text/plain", ev.target.id);
+    }
+
+    function dropIt(ev) {
+        ev.preventDefault();  // default is not to allow drop
+        let sourceId = ev.dataTransfer.getData("text/plain");
+        let sourceIdEl = document.getElementById(sourceId);
+        let sourceIdParentEl = sourceIdEl.parentElement;
+        // ev.target.id here is the id of target Object of the drop
+        let targetEl = document.getElementById(ev.target.id);
+        let targetParentEl = targetEl.parentElement;
+        console.log("Col: ", targetParentEl);
+        console.log("Col ID: ", targetParentEl.id);
+
+        if (targetParentEl.id) {
+            $.ajax({
+                type: "POST",
+                url: `/api/task/${sourceId.slice(5)}/changeColumn/`,
+                // The key needs to match your method's input parameter (case-sensitive).
+                data: JSON.stringify({column: targetParentEl.id.slice(4)}),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    alert(data);
+                },
+                error: function (errMsg) {
+                    alert(errMsg);
+                }
+            })
+        }
+
+        // Compare List names to see if we are going between lists
+        // or within the same list
+        if (targetParentEl.id !== sourceIdParentEl.id) {
+            // If the source and destination have the same
+            // className (card), then we risk dropping a Card in to a Card
+            // That may be a cool feature, but not for us!
+            if (targetEl.className === sourceIdEl.className) {
+                // Append to parent Object (list), not to a
+                // Card in the list
+                // This is in case you drag and drop a Card on top
+                // of a Card in a different list
+                targetParentEl.appendChild(sourceIdEl);
+
+            } else {
+                // Append to the list
+                targetEl.appendChild(sourceIdEl);
+
+            }
+
+        } else {
+            // Same list. Swap the text of the two cards
+            // Just like swapping the values in two variables
+
+            // Temporary holder of the destination Object
+            let holder = targetEl;
+            // The text of the destination Object.
+            // We are really just moving the text, not the Card
+            let holderText = holder.textContent;
+            // Replace the destination Objects text with the sources text
+            targetEl.textContent = sourceIdEl.textContent;
+            // Replace the sources text with the original destinations
+            sourceIdEl.textContent = holderText;
+            holderText = '';
+        }
+
+    }
+</script>
+<script>
+    let flex = $("#chat").is(":visible");
+    $("#chat-toggle").click(function () {
+        $("#chat-room").toggle();
+
+        if ($('#chat-room').is(":visible")) {
+            $("#chat").css("display", "flex");
+        } else {
+            $("#chat").css("display", "block");
+        }
+    });
+    $(".addTask").click(function () {
+        let id = $(this).data("id");
+        $(`#form-${id}`).toggle();
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.2/split.min.js"
+        integrity="sha512-to2k78YjoNUq8+hnJS8AwFg/nrLRFLdYYalb18SlcsFRXavCOTfBF3lNyplKkLJeB8YjKVTb1FPHGSy9sXfSdg=="
+        crossorigin="anonymous"></script>
+<script>
+    var socket = new WebSocket("ws://localhost:8008/");
+
+    function findGetParameter(parameterName) {
+        var result = null,
+            tmp = [];
+        location.search
+            .substr(1)
+            .split("&")
+            .forEach(function (item) {
+                tmp = item.split("=");
+                if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+            });
+        return result;
+    }
+
+    let username = "{{ request.user.username }}";
+    let name = "{{ request.user.first_name }}";
+    let last_name = "{{ request.user.last_name }}";
+    let group_id = "{{ board.token }}";
+    let password = "{{ request.user.password }}";
+
+    let wsSend = function (data) {
+        let sent = false;
+        while (!sent) {
+            try {
+                if (!socket.readyState) {
+                    setTimeout(function () {
+                        socket.send(data);
+                    }, 100);
+                } else {
+                    socket.send(data);
+                }
+                sent = true;
+            } catch (e) {
+                sent = false;
+            }
+        }
+    };
+
+    // login in chat system
+    wsSend(JSON.stringify({
+        'action': 'presence',
+        'username': username,
+        "password": password
+    }));
+
+    // get messages
+    wsSend(JSON.stringify({
+        "action": "get_group_messages",
+        "group_id": group_id,
+    }));
+
+    // sending user's message
+    $("#sendMessage").submit(function (e) {
+        e.preventDefault();
+        let outgoingMessage = this.message.value;
+
+        wsSend(JSON.stringify({
+            'action': 'group_message',
+            'group_id': group_id,
+            'username': username,
+            'message_text': outgoingMessage
+        }));
+        document.getElementsByClassName('messages')[0].innerHTML += `<li class="mine"><span>${outgoingMessage}</span></li>`;
+        return false;
+    });
+
+
+    // on server's response handler
+    socket.onmessage = function (event) {
+        let incomingMessage = event.data;
+        try {
+            incomingMessage = JSON.parse(incomingMessage);
+        } catch (e) {
+            console.log(e);
+        }
+
+        console.log(incomingMessage);
+
+        if (incomingMessage.code === 200) {
+            console.log("Response from server");
+        } else if (incomingMessage.code === 500) {
+            alert(incomingMessage.message);
+        } else if (incomingMessage.action != null && incomingMessage.action === "group_message") {
+            document.getElementsByClassName('messages')[0].innerHTML += `<li><span>${incomingMessage.from_user}: ${incomingMessage.message_text}</span></li>`
+        }
+    };
+</script>
+</body>
+</html>
