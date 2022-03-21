@@ -34,6 +34,11 @@ Application consists of two services: `web app and messenger service`.
 `Web platform` represents a core service with user service and project management. Built on `Python/Django using MySQL`.  
 `Messenger service` is a module for web platform. Group chat is being created automatically for each project board. Module uses `Node.js, WebSockets and MongoDB`.  
 
+### Screenshots
+![main-page](https://user-images.githubusercontent.com/40773987/159206800-3492c428-0087-4b62-8188-c5787cfcb516.png)
+![board-page](https://user-images.githubusercontent.com/40773987/159206769-e16b36f9-4149-4963-9c23-99edac44b4e3.png)
+![chat](https://user-images.githubusercontent.com/40773987/159206824-482b11f8-d70d-497a-90a2-cc8a8c713be5.png)
+
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
