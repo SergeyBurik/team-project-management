@@ -1,7 +1,7 @@
 {% extends 'mainapp/base.html' %}
 {% block content %}
     <div class="container mt-5" id="app">
-        <h3 class="mb-5">Boards</h3>
+        <h3 class="mb-3">Boards</h3>
 
         <button id="createBoardBtn" type="button" class="btn btn-app">New Board</button>
 
@@ -11,11 +11,12 @@
                   style=" border: none" method="post">
                 {% csrf_token %}
                 <div class="form-group">
-                    <input name="name" v-model="name" class="form-control" type="text">
+                    <input name="name" v-model="name" placeholder="Board's name" class="form-control" type="text">
 
                 </div>
                 <div class="form-group">
                     <select name="type" v-model="type" class="form-control">
+                        <option value="">Board's type</option>
                         {% for type in board_types %}
                             <option value="{{ type.0 }}">{{ type.1 }}</option>
                         {% endfor %}
@@ -28,18 +29,15 @@
         </div>
 
 
-        <div class="boards mt-5">
+        <div class="boards mt-3">
             {% for board in boards %}
                 <div class="board">
-                    <h4>
+                    <h5>
                         <a href="{% url 'main:board' board.author.username board.id %}">
                             {{ board.name }}
                         </a>
-                    </h4>
-                    <h6>
-                        {{ board.type }}
-                    </h6>
-                    <p>
+                    </h5>
+                    <p class="disabled">
                         {{ board.author.username }}
                     </p>
                 </div>
@@ -77,6 +75,9 @@
             methods: {
                 createBoard: function (e) {
                     e.preventDefault();
+                    console.log(this.name);
+                    console.log(this.type);
+
                     axios({
                             method: 'post',
                             url: "/api/{{ request.user.username }}/boards/",
@@ -92,7 +93,7 @@
                         .then(response => {
                             console.log(response);
                             if (response.status === 200) {
-                                document.location = `{{ request.user.username }}/${response.data.token}/`;
+                                document.location = `{{ request.user.username }}/${response.data.id}/`;
                             }
                         })
                 }

@@ -70,7 +70,7 @@
                                     <div class="form-group">
                                         <input type="text" name="name" placeholder="Task's name" class="form-control">
                                     </div>
-                                    <button class="btn" style="color: white" type="submit">Create</button>
+                                    <button class="btn"  type="submit">Create</button>
                                 </form>
                             </div>
 
@@ -85,7 +85,7 @@
                             <div class="form-group">
                                 <input type="text" name="name" placeholder="Column's name" class="form-control">
                             </div>
-                            <button class="btn" style="color: white" type="submit">New column</button>
+                            <button class="btn" type="submit">New column</button>
                         </form>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
 
             <form action="#" id="sendMessage" class="messageForm">
                 <input type="text" name="message" class="messageInput" placeholder="Enter message">
-                <button type="submit" class="btn" style="color: white">Send</button>
+                <button type="submit" class="btn" style="border: 1px solid grey">Send</button>
             </form>
         </div>
         <div id="chat-tools"
@@ -156,20 +156,14 @@
         console.log("Col ID: ", targetParentEl.id);
 
         if (targetParentEl.id) {
-            $.ajax({
-                type: "POST",
-                url: `/api/task/${sourceId.slice(5)}/changeColumn/`,
-                // The key needs to match your method's input parameter (case-sensitive).
-                data: JSON.stringify({column: targetParentEl.id.slice(4)}),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (data) {
-                    alert(data);
+            $.post(`/api/task/${sourceId.slice(5)}/changeColumn/`,
+                {
+                    column: targetParentEl.id.slice(4)
                 },
-                error: function (errMsg) {
-                    alert(errMsg);
+                function (data, status) {
+                    alert(data);
                 }
-            })
+            );
         }
 
         // Compare List names to see if we are going between lists
