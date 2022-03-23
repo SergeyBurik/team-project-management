@@ -27,7 +27,6 @@ def join(request):
 
 
 def login(request):
-	print(request.user.is_authenticated)
 
 	if request.method == 'POST':
 		username = request.POST['username']

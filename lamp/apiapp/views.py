@@ -27,7 +27,6 @@ class UserBoardsView(APIView):
 			return Response({"code": 403}, status=status.HTTP_403_FORBIDDEN)
 
 		# creating new board
-		print(request.data)
 		name = request.data['name']
 		type_ = request.data['type']
 
