@@ -1,9 +1,8 @@
 from django.contrib import auth
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-
-# Create your views here.
 from django.urls import reverse
+
 
 def join(request):
 	if request.method == 'POST':
